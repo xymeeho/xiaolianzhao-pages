@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="小连招">
+<meta property="og:image" content="https://xymeeho.github.io/xiaolianzhao-pages/logo.png">
+<meta name="apple-itunes-app" content="app-id=YOUR_APP_ID">
+<title>小连招 · 分享</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Noto Sans SC", "Helvetica Neue", sans-serif;
+    background: #fff;
+    color: #000;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #000; color: #fff; }
+    .card { border-color: #333; }
+    .move { border-color: #222; }
+    .btn-open { background: #fff; color: #000; }
+    .btn-copy { border-color: #444; color: #fff; }
+    .footer { color: #555; }
+  }
+
+  .logo { width: 60px; margin-top: 48px; margin-bottom: 8px; }
+  .app-name { font-size: 14px; color: #888; margin-bottom: 32px; }
+
+  .card {
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .combo-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .combo-meta {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 20px;
+  }
+  .moves-list {
+    list-style: none;
+  }
+  .move {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+  }
+  .move:last-child { border-bottom: none; }
+  .move-index {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  @media (prefers-color-scheme: dark) {
+    .move-index { background: #fff; color: #000; }
+  }
+  .move-name { flex: 1; }
+  .move-duration { color: #888; font-size: 13px; margin-left: 8px; }
+
+  .actions {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .btn-open {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: #000;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+  }
+  .btn-open:active { opacity: 0.8; }
+  .btn-copy {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: transparent;
+    color: #000;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-copy:active { opacity: 0.8; }
+
+  .footer {
+    color: #ccc;
+    font-size: 12px;
+    margin-bottom: 32px;
+  }
+
+  .error {
+    text-align: center;
+    margin-top: 80px;
+    color: #888;
+  }
+  .error h2 { font-size: 18px; margin-bottom: 8px; color: #000; }
+  @media (prefers-color-scheme: dark) {
+    .error h2 { color: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<img class="logo" id="logo" src="" alt="小连招">
+<div class="app-name">小连招</div>
+
+<div id="content"></div>
+
+<script>
+// Parse combo data from URL
+function parseCombo() {
+  const params = new URLSearchParams(window.location.search);
+  const b64 = params.get('d');
+  if (!b64) return null;
+  try {
+    const json = atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(json);
+  } catch(e) {
+    return null;
+  }
+}
+
+function formatDuration(seconds) {
+  if (!seconds) return null;
+  if (seconds < 60) return seconds + ' 秒';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (s === 0) return m + ' 分钟';
+  return m + ' 分 ' + s + ' 秒';
+}
+
+function generateClipboardText(combo) {
+  return '#xlz#' + JSON.stringify(combo);
+}
+
+// Set dynamic OG tags via document.title
+const combo = parseCombo();
+
+// Logo - use inline SVG data URI for simplicity
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+document.getElementById('logo').src = isDark
+  ? 'https://xymeeho.github.io/xiaolianzhao-pages/logo-white.png'
+  : 'https://xymeeho.github.io/xiaolianzhao-pages/logo-black.png';
+
+const content = document.getElementById('content');
+
+if (!combo) {
+  content.innerHTML = `
+    <div class="error">
+      <h2>无法解析连招数据</h2>
+      <p>链接可能已失效</p>
+    </div>
+  `;
+} else {
+  document.title = combo.name + ' - 小连招 · 分享';
+
+  const movesHtml = (combo.moves || []).map((m, i) => {
+    const dur = formatDuration(m.seconds);
+    return `
+      <li class="move">
+        <span class="move-index">${i + 1}</span>
+        <span class="move-name">${m.name || '未命名'}</span>
+        ${dur ? '<span class="move-duration">' + dur + '</span>' : ''}
+      </li>
+    `;
+  }).join('');
+
+  const totalSteps = (combo.moves || []).length;
+  const clipboardText = generateClipboardText(combo);
+
+  // URL Scheme for opening in app
+  const appUrl = 'xiaolianzhao://import?d=' + encodeURIComponent(btoa(JSON.stringify(combo)));
+
+  content.innerHTML = `
+    <div class="card">
+      <div class="combo-name">${combo.name || '未命名连招'}</div>
+      <div class="combo-meta">${totalSteps} 个步骤</div>
+      <ul class="moves-list">${movesHtml}</ul>
+    </div>
+    <div class="actions">
+      <a class="btn-open" id="btn-open" href="${appUrl}">用小连招打开</a>
+      <button class="btn-copy" id="btn-copy">复制连招数据</button>
+    </div>
+    <div class="footer">没有安装？前往 App Store 搜索「小连招」</div>
+  `;
+
+  // Open in app with fallback
+  document.getElementById('btn-open').addEventListener('click', function(e) {
+    e.preventDefault();
+    const start = Date.now();
+    window.location = appUrl;
+    setTimeout(function() {
+      if (Date.now() - start < 2000) {
+        // App didn't open, redirect to App Store
+        // Replace with actual App Store URL when available
+        window.location = 'https://apps.apple.com/app/id_YOUR_APP_ID';
+      }
+    }, 1500);
+  });
+
+  // Copy to clipboard
+  document.getElementById('btn-copy').addEventListener('click', function() {
+    navigator.clipboard.writeText(clipboardText).then(function() {
+      this.textContent = '已复制 ✓';
+      setTimeout(() => { this.textContent = '复制连招数据'; }, 2000);
+    }.bind(this));
+  });
+}
+</script>
+</body>
+</html>
