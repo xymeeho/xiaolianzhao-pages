@@ -207,7 +207,9 @@ if (!combo) {
   const clipboardText = generateClipboardText(combo);
 
   // URL Scheme for opening in app
-  const appUrl = 'xiaolianzhao://import?d=' + encodeURIComponent(btoa(JSON.stringify(combo)));
+  const jsonBytes = new TextEncoder().encode(JSON.stringify(combo));
+  const b64 = btoa(String.fromCharCode(...jsonBytes));
+  const appUrl = 'xiaolianzhao://import?d=' + encodeURIComponent(b64);
 
   content.innerHTML = `
     <div class="card">
