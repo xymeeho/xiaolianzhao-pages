@@ -149,7 +149,9 @@ function parseCombo() {
   const b64 = params.get('d');
   if (!b64) return null;
   try {
-    const json = atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+    const binary = atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const json = new TextDecoder('utf-8').decode(bytes);
     return JSON.parse(json);
   } catch(e) {
     return null;
