@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小连招 · AI 创建连招</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+    background: #fff; color: #000;
+    min-height: 100vh; padding: 0 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #000; color: #fff; }
+    .card { border-color: #222; }
+    .copy-btn { background: #fff; color: #000; }
+    .step-num { background: #fff; color: #000; }
+    .hint { color: #555; }
+    .back { color: #666; }
+    .back:hover { color: #fff; }
+  }
+
+  .container { max-width: 560px; margin: 0 auto; padding: 48px 0 64px; }
+
+  .back {
+    display: inline-block; font-size: 13px; color: #999; text-decoration: none;
+    margin-bottom: 32px; transition: color 0.2s;
+  }
+  .back:hover { color: #000; }
+
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .subtitle { font-size: 15px; color: #888; margin-bottom: 40px; line-height: 1.6; }
+
+  .steps { margin-bottom: 40px; }
+  .step { display: flex; gap: 16px; margin-bottom: 28px; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%; background: #000; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; flex-shrink: 0; margin-top: 2px;
+  }
+  .step-content { flex: 1; }
+  .step-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc { font-size: 14px; color: #666; line-height: 1.6; }
+
+  .card {
+    border: 1px solid #e0e0e0; border-radius: 16px; padding: 20px;
+    margin-bottom: 16px; position: relative;
+  }
+  .card-label { font-size: 12px; color: #999; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .card-text {
+    font-size: 13px; line-height: 1.7; color: #444;
+    white-space: pre-wrap; word-break: break-all;
+    max-height: 200px; overflow-y: auto;
+    font-family: 'SF Mono', 'Menlo', monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    .card-text { color: #bbb; }
+  }
+
+  .copy-btn {
+    display: block; width: 100%; padding: 16px; border-radius: 13px;
+    border: none; background: #000; color: #fff;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.02em;
+  }
+  .copy-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .copy-btn:active { transform: translateY(0); }
+  .copy-btn.copied { background: #22c55e; }
+
+  .hint {
+    text-align: center; font-size: 13px; color: #bbb; margin-top: 20px; line-height: 1.6;
+  }
+
+  .example { margin-top: 48px; }
+  .example h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+  .example-item {
+    padding: 16px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .example-item { border-color: #222; }
+  }
+  .example-item strong { font-weight: 600; }
+  .example-item span { color: #888; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back">&larr; 返回首页</a>
+
+  <h1>让 AI 帮你创建连招</h1>
+  <p class="subtitle">复制下面的提示词，发送给你的 AI 助手（Claude、ChatGPT、Kimi 等），以后只需告诉它你想做什么，它就能生成可以直接导入小连招的数据。</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">复制提示词</div>
+        <div class="step-desc">点击下方按钮，一键复制 AI 提示词</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">发给 AI</div>
+        <div class="step-desc">粘贴到你常用的 AI 助手对话中</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">告诉它你想做什么</div>
+        <div class="step-desc">比如"帮我创建一套护腰动作"，AI 会输出一段数据</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">复制 → 打开小连招</div>
+        <div class="step-desc">复制 AI 输出的数据，打开 app，自动弹窗导入</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">AI 提示词</div>
+    <div class="card-text" id="promptText">你是一个帮助用户创建「小连招」app 连招数据的助手。
+
+小连招是一款任务流程工具，用户可以创建一系列有序步骤（称为"连招"），每个步骤可以设置倒计时，然后按顺序逐步执行。
+
+当用户要求你创建连招时，输出以下格式的文本（用户可以直接复制粘贴到 app 中导入）：
+
+#xlz#{"name":"连招名称","moves":[{"name":"步骤名称","seconds":秒数},{"name":"步骤名称"}]}
+
+规则：
+- 输出必须以 #xlz# 开头，紧跟 JSON，中间没有空格
+- JSON 必须是单行，不要格式化
+- name：连招名称（必填）
+- moves：步骤数组（必填，至少 1 个）
+  - name：步骤名称（必填，2-6 个字）
+  - seconds：倒计时秒数（可选，不填则为手动完成模式）
+- 时间换算：30秒=30，1分钟=60，5分钟=300，25分钟=1500
+
+示例：
+用户："帮我创建一个番茄工作法"
+#xlz#{"name":"番茄工作法","moves":[{"name":"专注工作","seconds":1500},{"name":"休息","seconds":300}]}
+
+用户："帮我创建一个晨间流程"
+#xlz#{"name":"晨间流程","moves":[{"name":"喝水"},{"name":"洗漱","seconds":300},{"name":"护肤","seconds":180},{"name":"换衣服"},{"name":"出门检查"}]}</div>
+  </div>
+
+  <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">一键复制提示词</button>
+  <p class="hint">复制后粘贴到 AI 对话中即可使用</p>
+
+  <div class="example">
+    <h2>你可以这样告诉 AI</h2>
+    <div class="example-item"><strong>"帮我创建一套护腰动作，每个 1 分钟"</strong><br><span>→ AI 会生成包含多个 1 分钟步骤的护腰连招</span></div>
+    <div class="example-item"><strong>"帮我做一个冥想流程"</strong><br><span>→ AI 会设计冥想的各个阶段和时长</span></div>
+    <div class="example-item"><strong>"番茄工作法，25 分钟工作 5 分钟休息"</strong><br><span>→ AI 会创建一个简单的番茄循环</span></div>
+    <div class="example-item"><strong>"出门前的检查清单"</strong><br><span>→ AI 会生成一个无计时的手动检查连招</span></div>
+  </div>
+</div>
+
+<script>
+function copyPrompt() {
+  const text = document.getElementById('promptText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '已复制 ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '一键复制提示词';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
